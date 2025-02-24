@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes blob-main {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translate(-250px, 150px) scale(1.1) rotate(90deg);
+  }
+  50% {
+    transform: translate(200px, -200px) scale(0.95) rotate(180deg);
+  }
+  75% {
+    transform: translate(-150px, -250px) scale(1.05) rotate(270deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes blob-secondary {
+  0% {
+    transform: translate(100px, 100px) scale(1);
+  }
+  33% {
+    transform: translate(-150px, -200px) scale(1.2);
+  }
+  66% {
+    transform: translate(200px, 100px) scale(0.8);
+  }
+  100% {
+    transform: translate(100px, 100px) scale(1);
+  }
+}
+
+@keyframes blob-tertiary {
+  0% {
+    transform: translate(-100px, -100px) scale(1);
+  }
+  33% {
+    transform: translate(200px, -100px) scale(1.1);
+  }
+  66% {
+    transform: translate(-150px, 150px) scale(0.9);
+  }
+  100% {
+    transform: translate(-100px, -100px) scale(1);
+  }
+}
+
+@keyframes particle {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes celebration-particle {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.5) rotate(180deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-blob-main {
+  animation: blob-main 35s ease-in-out infinite;
+}
+
+.animate-blob-secondary {
+  animation: blob-secondary 25s ease-in-out infinite;
+}
+
+.animate-blob-tertiary {
+  animation: blob-tertiary 30s ease-in-out infinite;
+}
+
+.animate-particle {
+  animation: particle 2s ease-in-out infinite;
+}
+
+.animate-celebration-particle {
+  animation: celebration-particle 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}

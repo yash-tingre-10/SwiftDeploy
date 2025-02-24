@@ -6,6 +6,7 @@ const app = express();
 const proxy = httpProxy.createProxy();
 
 const BASE_PATH = process.env.AWS_BUCKET_BASE_PATH;
+const PORT = process.env.PORT || 3000; // Use PORT from env or default to 3000
 
 app.use((req, res) => {
   const hostname = req.hostname;
@@ -20,5 +21,5 @@ proxy.on("proxyReq", (proxyReq, req, res) => {
   if (url === "/") proxyReq.path += "index.html";
 });
 
-// ✅ Export for Vercel
-module.exports = app;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

@@ -4,11 +4,20 @@ const axios = require("axios");
 const PORT = 3000;
 const app = express();
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+let storedProject = null;
+
 // Stream files from S3
 app.get("*", async (req, res) => {
-  const deploy = req.query.deploy;
   const filePath = req.path.replace(/^\/+/, "");
-  const BASE_URL = `https://swift-deploy-bucket.s3.ap-south-1.amazonaws.com/__outputs/${deploy}`;
+  const project = req.query.project;
+  if( project ) {
+    storedProject = project;
+  }
+  console.log(project);
+  const BASE_URL = `https://swift-deploy-bucket.s3.ap-south-1.amazonaws.com/__outputs/${storedProject}`;
   const url = `${BASE_URL}/${filePath}`;
 
   try {

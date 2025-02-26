@@ -16,19 +16,16 @@ WORKDIR /app
 RUN mkdir -p /app/output
 
 # Copy necessary files
-COPY main.sh /app/main.sh
-COPY script.js /app/script.js
-COPY package*.json /app/
-COPY .env /app/.env
+COPY main.sh script.js package*.json .env /app/
 
-# Fix line endings in main.sh (in case of CRLF issues)
-RUN sed -i 's/\r$//' /app/main.sh
+# Convert line endings to LF (Linux format) if needed
+RUN dos2unix /app/main.sh || true
 
 # Make the shell script executable
 RUN chmod +x /app/main.sh
 
 # Install Node.js dependencies
-RUN npm install
+RUN npm install --omit=dev
 
 # Use /bin/bash explicitly for execution
 ENTRYPOINT ["/bin/bash", "/app/main.sh"]

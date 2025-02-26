@@ -22,7 +22,7 @@ function App() {
 
     const sendData = async () => {
       try {
-        const res = await axios.post('/api/example', {
+        const res = await axios.post('', {
           gitURL: githubUrl,
         });
   

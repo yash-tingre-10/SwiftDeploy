@@ -32,8 +32,7 @@ async function init() {
     console.log("executing script.js");
 
     const outputDirPath = path.join(__dirname, 'output');
-
-    publisherLog('Build Started...');
+    publisherLog('🚀 Starting build process...');
     publisherLog('Installing Dependencies...');
     const p = exec(`cd ${outputDirPath} && npm install && npm run build`);
 

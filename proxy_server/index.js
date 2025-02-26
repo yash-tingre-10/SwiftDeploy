@@ -1,29 +1,26 @@
-const express = require('express');
-const httpProxy = require('http-proxy');
-require('dotenv').config();
+const express = require("express");
+const axios = require("axios");
 
+const PORT = 3000;
 const app = express();
-const PORT = process.env.REVERSE_PROXY_PORT ;
 
-const BASE_PATH = process.env.AWS_BUCKET_BASE_PATH;
+// Stream files from S3
+app.get("*", async (req, res) => {
+  const deploy = req.query.deploy;
+  const filePath = req.path.replace(/^\/+/, "");
+  const BASE_URL = `https://swift-deploy-bucket.s3.ap-south-1.amazonaws.com/__outputs/${deploy}`;
+  const url = `${BASE_URL}/${filePath}`;
 
-const proxy = httpProxy.createProxy();
-
-app.use((req, res) => {
-  const hostname = req.hostname;
-  const subdomain = hostname.split('.')[0];
-
-  // Custom Domain - DB Query
-  const resolvesTo = `${BASE_PATH}${subdomain}`;
-
-  return proxy.web(req, res, { target: resolvesTo, changeOrigin: true });
-});
-
-proxy.on('proxyReq', (proxyReq, req, res) => {
-  const url = req.url;
-  if (url === '/') {
-    proxyReq.path += 'index.html';
+  try {
+    const response = await axios({ url, responseType: "stream" });
+    res.setHeader("Content-Type", response.headers["content-type"]);
+    response.data.pipe(res);
+  } catch (error) {
+    res.status(404).send("❌ File not found");
   }
 });
 
-app.listen(PORT, () => console.log(`Reverse Proxy Running on ${PORT}`));
+// Start the server
+app.listen(PORT, () => {
+  console.log(`🚀 Streaming server running at http://localhost:${PORT}`);
+});

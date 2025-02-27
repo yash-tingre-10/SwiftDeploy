@@ -19,7 +19,7 @@ function App() {
     const startPollingLogs = (slug: string) => {
         pollingRef.current = setInterval(async () => {
             try {
-                const res = await axios.get(`https://swiftdeploy-1.onrender.com/logs/${slug}`);
+                const res = await axios.get(`https://swiftdeploy.onrender.com/logs/${slug}`);
                 const allLogs: string[] = res.data || [];
 
                 // Filter logs: only keep ones with emojis

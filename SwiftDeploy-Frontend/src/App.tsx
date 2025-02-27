@@ -9,7 +9,7 @@ import { CelebrationEffect } from './components/CelebrationEffect';
 function App() {
     const [githubUrl, setGithubUrl] = useState('');
     const [logs, setLogs] = useState<string[]>([]);
-    const [isProcessing, setIsProcessing] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(undefined);
     const [deployUrl, setDeployUrl] = useState<string | null>(null);
     const [projectSlug, setProjectSlug] = useState<string | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -84,7 +84,9 @@ function App() {
                         onSubmit={handleSubmit}
                         onChange={setGithubUrl}
                     />
-                    <BuildLogs logs={logs} isProcessing={isProcessing} />
+                    { undefined !== isProcessing && ( 
+                      <BuildLogs logs={logs} isProcessing={isProcessing} />
+                    )}
                     {deployUrl && !isProcessing && (
                         <CelebrationEffect deployUrl={deployUrl} />
                     )}

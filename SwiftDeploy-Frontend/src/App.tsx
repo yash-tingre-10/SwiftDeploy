@@ -13,13 +13,15 @@ function App() {
     const [deployUrl, setDeployUrl] = useState<string | null>(null);
     const [projectSlug, setProjectSlug] = useState<string | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
+    const DEPLOYMENT_API = import.meta.env.VITE_DEPLOYMENT_API;
+    const DEPLOYMENT_LOGS_API = import.meta.env.VITE_DEPLOYMENT_LOGS_API;
 
     const emojiLogRegex = /[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}]/u;  // Matches emojis (basic coverage)
 
     const startPollingLogs = (slug: string) => {
         pollingRef.current = setInterval(async () => {
             try {
-                const res = await axios.get(`${process.env.DEPLOYMENT_LOGS_API}/${slug}`);
+                const res = await axios.get(`${DEPLOYMENT_LOGS_API}/${slug}`);
                 const allLogs: string[] = res.data || [];
 
                 // Filter logs: only keep ones with emojis
@@ -49,7 +51,7 @@ function App() {
         setDeployUrl(null);
 
         try {
-            const res = await axios.post( process.env.DEPLOYMENT_API, { gitURL: githubUrl });
+            const res = await axios.post( DEPLOYMENT_API, { gitURL: githubUrl });
             console.log(res);
             const { projectSlug, url } = res.data.data;
             setProjectSlug(projectSlug);

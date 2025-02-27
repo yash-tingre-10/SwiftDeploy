@@ -36,7 +36,7 @@ async function init() {
 
     console.log("📦 Installing dependencies...");
     publisherLog('📦 Installing dependencies...');
-    const p = exec(`cd ${outputDirPath} && npm install && npm run build`);
+    const p = exec(`cd ${outputDirPath} && npm install --silent && npm run build --silent`);
 
     p.stdout.on('data', function (data) {
         const message = data.toString().trim();

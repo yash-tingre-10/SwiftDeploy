@@ -51,7 +51,7 @@ function App() {
 
         try {
             const res = await axios.post('https://swiftdeploy.onrender.com/project', { gitURL: githubUrl });
-
+            console.log(res);
             const { projectSlug, url } = res.data.data;
             setProjectSlug(projectSlug);
             setDeployUrl(url);  // Optional: final URL, if needed

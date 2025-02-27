@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const app = express();
 const server = createServer(app);
-const PORT = process.env.SERVER_PORT;
+const PORT = process.env.SERVER_PORT || 9004;
 
 const ecsClient = new ECSClient({
     region: process.env.AWS_REGION,

@@ -11,14 +11,13 @@ let storedProject = null;
 
 // Stream files from S3
 app.get("*", async (req, res) => {
-  const filePath = req.path.replace(/^\/+/, "");
-  const project = req.query.project;
-  if( project ) {
-    storedProject = project;
+  const deploy = req.query.deploy;
+  if( deploy ) {
+    storedProject = deploy;
   }
-  console.log(project);
+  console.log(storedProject);
   const BASE_URL = `https://swift-deploy-bucket.s3.ap-south-1.amazonaws.com/__outputs/${storedProject}`;
-  const url = `${BASE_URL}/${filePath}`;
+  const url = BASE_URL;
 
   try {
     const response = await axios({ url, responseType: "stream" });

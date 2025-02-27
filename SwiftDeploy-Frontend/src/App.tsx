@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Navbar } from './components/Navbar';
 import { BackgroundBlobs } from './components/BackgroundBlobs';
@@ -7,73 +7,91 @@ import { BuildLogs } from './components/BuildLogs';
 import { CelebrationEffect } from './components/CelebrationEffect';
 
 function App() {
-  const [githubUrl, setGithubUrl] = useState('');
-  const [logs, setLogs] = useState<string[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [deployUrl, setDeployUrl] = useState<string | null>(null);
-  const [response, setResponse] = useState(null);
+    const [githubUrl, setGithubUrl] = useState('');
+    const [logs, setLogs] = useState<string[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [deployUrl, setDeployUrl] = useState<string | null>(null);
+    const [projectSlug, setProjectSlug] = useState<string | null>(null);
+    const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!githubUrl.trim()) return;
+    const emojiLogRegex = /[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}]/u;  // Matches emojis (basic coverage)
 
-    setIsProcessing(true);
+    const startPollingLogs = (slug: string) => {
+        pollingRef.current = setInterval(async () => {
+            try {
+                const res = await axios.get(`http://localhost:9004/logs/${slug}`);
+                const allLogs: string[] = res.data || [];
 
+                // Filter logs: only keep ones with emojis
+                const emojiLogs = allLogs
+                    .map(log => log.replace(/^"|"$/g, ''))  // Remove surrounding quotes if any
+                    .filter(log => emojiLogRegex.test(log)); // Only keep logs with emojis
 
-    const sendData = async () => {
-      try {
-        const res = await axios.post('', {
-          gitURL: githubUrl,
-        });
-  
-        setResponse(res.data);
-      } catch (error) {
-        console.error('Error sending data:', error);
-      }
+                setLogs(emojiLogs);
+
+                // Check for completion log
+                if (emojiLogs.some(log => log.includes('🎉 Deployment process completed successfully!'))) {
+                    clearInterval(pollingRef.current!);
+                    setIsProcessing(false);
+                    setDeployUrl(`https://swiftdeploy-1.onrender.com/index.html?deploy=${slug}`);
+                }
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+            }
+        }, 5000); // poll every 5 seconds
     };
-    setLogs(prev => [...prev, `Cloning repository: ${githubUrl}`]);
 
-    const processingSteps = [
-      { message: 'Installing dependencies...', delay: 1500 },
-      { message: 'Running security checks...', delay: 2000 },
-      { message: 'Building project...', delay: 2500 },
-      { message: 'Running tests...', delay: 2000 },
-      { message: 'Optimizing build...', delay: 1500 },
-      { message: 'Deployment complete! ✨', delay: 1000 }
-    ];
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!githubUrl.trim()) return;
 
-    for (const step of processingSteps) {
-      await new Promise(resolve => setTimeout(resolve, step.delay));
-      setLogs(prev => [...prev, step.message]);
-    }
+        setIsProcessing(true);
+        setLogs(['🚀 Starting deployment process...']);
+        setDeployUrl(null);
 
-    setDeployUrl('https://your-project.netlify.app');
-    setIsProcessing(false);
-  };
+        try {
+            const res = await axios.post('https://swiftdeploy.onrender.com/project', { gitURL: githubUrl });
 
-  
+            const { projectSlug, url } = res.data.data;
+            setProjectSlug(projectSlug);
+            setDeployUrl(url);  // Optional: final URL, if needed
+            startPollingLogs(projectSlug);
+        } catch (error) {
+            console.error('Error sending data:', error);
+            setLogs(prev => [...prev, '❌ Failed to initiate deployment']);
+            setIsProcessing(false);
+        }
+    };
 
-  return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      <BackgroundBlobs />
-      <Navbar />
-      
-      <main className="max-w-4xl mx-auto px-4 py-20 relative z-10">
-        <div className="flex flex-col items-center gap-8">
-          <SearchForm
-            githubUrl={githubUrl}
-            isProcessing={isProcessing}
-            onSubmit={handleSubmit}
-            onChange={setGithubUrl}
-          />
-          <BuildLogs logs={logs} isProcessing={isProcessing} />
-          {deployUrl && !isProcessing && (
-            <CelebrationEffect deployUrl={deployUrl} />
-          )}
+    useEffect(() => {
+        return () => {
+            if (pollingRef.current) {
+                clearInterval(pollingRef.current);
+            }
+        };
+    }, []);
+
+    return (
+        <div className="min-h-screen bg-black text-white relative overflow-hidden">
+            <BackgroundBlobs />
+            <Navbar />
+
+            <main className="max-w-4xl mx-auto px-4 py-20 relative z-10">
+                <div className="flex flex-col items-center gap-8">
+                    <SearchForm
+                        githubUrl={githubUrl}
+                        isProcessing={isProcessing}
+                        onSubmit={handleSubmit}
+                        onChange={setGithubUrl}
+                    />
+                    <BuildLogs logs={logs} isProcessing={isProcessing} />
+                    {deployUrl && !isProcessing && (
+                        <CelebrationEffect deployUrl={deployUrl} />
+                    )}
+                </div>
+            </main>
         </div>
-      </main>
-    </div>
-  );
+    );
 }
 
-export default App
+export default App;

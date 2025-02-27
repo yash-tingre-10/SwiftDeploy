@@ -22,71 +22,86 @@ const publisher = new Redis({
 });
 
 const PROJECT_ID = process.env.PROJECT_ID;
-console.log(`Project Name ${PROJECT_ID}`);
+console.log(`🚀 Starting deployment for project: ${PROJECT_ID}`);
 
 function publisherLog(log) {
     publisher.publish(`logs:${PROJECT_ID}`, JSON.stringify(log));
 }
 
 async function init() {
-    console.log("executing script.js");
+    console.log("⚙️  Initializing deployment process...");
+    publisherLog('🚀 Deployment process started');
 
     const outputDirPath = path.join(__dirname, 'output');
-    publisherLog('🚀 Starting build process...');
-    publisherLog('Installing Dependencies...');
+
+    console.log("📦 Installing dependencies...");
+    publisherLog('📦 Installing dependencies...');
     const p = exec(`cd ${outputDirPath} && npm install && npm run build`);
 
     p.stdout.on('data', function (data) {
-        console.log(data.toString());
-        publisherLog(data.toString());
+        const message = data.toString().trim();
+        if (!message.includes('added') && !message.includes('audited')) {
+            console.log(`📜 ${message}`);
+            publisherLog(message); // Only send meaningful logs
+        }
     });
 
     p.stderr.on('data', function (data) {
-        console.log('Error', data.toString());
-        publisherLog(`Error ${data.toString()}`);
+        console.log('❌ Error:', data.toString().trim());
+        // No error logs to Redis, only console
     });
 
     p.on('close', async function (code) {
         if (code !== 0) {
-            console.log(`Build process exited with code ${code}`);
-            publisherLog(`Build process exited with code ${code}`);
-            process.exit(code); // Exit with the same code if build fails
+            console.log(`❌ Build failed with exit code ${code}`);
+            publisherLog(`❌ Build failed with exit code ${code}`);
+            process.exit(code);
             return;
         }
 
-        console.log('Build Complete');
-        publisherLog('Build Complete');
+        console.log('✅ Build completed successfully!');
+        publisherLog('✅ Build completed successfully');
+
         const distFolder = path.join(__dirname, 'output', 'dist');
         const buildFolder = path.join(__dirname, 'output', 'build');
 
         const outputFolderName = fs.existsSync(distFolder) ? 'dist' : fs.existsSync(buildFolder) ? 'build' : '';
-        console.log(`Build Files in... ${outputFolderName}`);
+        if (!outputFolderName) {
+            console.log('⚠️ No valid build output folder found (dist/build missing).');
+            publisherLog('⚠️ No valid build output folder found (dist/build missing).');
+            process.exit(1);
+        }
+
+        console.log(`📂 Build files detected in "${outputFolderName}" folder.`);
+        publisherLog(`📂 Build files detected in "${outputFolderName}" folder.`);
 
         const distFolderPath = path.join(__dirname, 'output', outputFolderName);
         const distFolderContents = fs.readdirSync(distFolderPath, { recursive: true });
 
+        console.log('📤 Preparing to upload files to S3...');
+
         for (const file of distFolderContents) {
             const filePath = path.join(distFolderPath, file);
-
             if (fs.lstatSync(filePath).isDirectory()) continue;
-            console.log('Uploading', filePath);
-            publisherLog(`Uploading ${filePath}`);
+
+            console.log(`⬆️ Uploading file: ${file}`);
+
             const command = new PutObjectCommand({
                 Bucket: 'swift-deploy-bucket',
                 Key: `__outputs/${PROJECT_ID}/${file}`,
                 Body: fs.createReadStream(filePath),
-                ContentType: mime.lookup(filePath),
+                ContentType: mime.lookup(filePath) || 'application/octet-stream'
             });
 
             await s3Client.send(command);
-            console.log(`Uploaded ${filePath}`);
+            console.log(`✅ Successfully uploaded: ${file}`);
         }
 
-        console.log('Done...');
-        publisherLog('Done...');
+        console.log('🎉 Deployment process completed successfully!');
+        publisherLog('🎉 Deployment process completed successfully!');
 
-        // Exit the process after everything is done
-        process.exit(0);
+        // Small delay to ensure final log is published before exit
+        setTimeout(() => process.exit(0), 500);
     });
 }
 

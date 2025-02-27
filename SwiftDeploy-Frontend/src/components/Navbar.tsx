@@ -12,7 +12,7 @@ export function Navbar() {
           </span>
         </div>
         <a
-          href="https://github.com"
+          href="https://github.com/yash-tingre-10/SwiftDeploy"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-4 py-2 rounded-lg border border-green-500/30 hover:bg-green-500/10 transition-all"

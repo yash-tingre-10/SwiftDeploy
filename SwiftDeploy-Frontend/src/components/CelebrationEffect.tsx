@@ -10,23 +10,24 @@ export function CelebrationEffect({ deployUrl }: CelebrationEffectProps) {
     <div className="relative w-full max-w-2xl">
       <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-indigo-500/20 to-blue-500/20 rounded-2xl blur-xl animate-pulse" />
       <div className="relative bg-black/50 border border-purple-500/30 rounded-xl p-8 backdrop-blur-sm overflow-hidden">
-        <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-celebration-particle"
-              style={{
-                width: '2px',
-                height: '2px',
-                background: '#8B64FF',
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                boxShadow: '0 0 4px #8B64FF',
-              }}
-            />
-          ))}
-        </div>
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute animate-celebration-particle"
+            style={{
+              width: '2px',
+              height: '2px',
+              background: '#8B64FF',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              boxShadow: '0 0 4px #8B64FF',
+            }}
+          />
+        ))}
+      </div>
+
         
         <div className="relative flex items-center justify-center mb-6">
           <Sparkles className="w-8 h-8 text-purple-400 animate-spin-slow absolute" />
